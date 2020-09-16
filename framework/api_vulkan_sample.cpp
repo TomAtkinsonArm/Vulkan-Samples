@@ -25,6 +25,8 @@
 #include "scene_graph/components/sub_mesh.h"
 #include "scene_graph/components/texture.h"
 
+#include "window_options/window_options.h"
+
 bool ApiVulkanSample::prepare(vkb::Platform &platform)
 {
 	if (!VulkanSample::prepare(platform))
@@ -48,7 +50,12 @@ bool ApiVulkanSample::prepare(vkb::Platform &platform)
 	// Command buffer submission info is set by each example
 	submit_info                   = vkb::initializers::submit_info();
 	submit_info.pWaitDstStageMask = &submit_pipeline_stages;
-	if (!is_headless())
+
+	auto *options = platform.get_plugin<plugins::WindowOptions>();
+
+	// TODO: FIX THIS
+	// if (!(options->get_window_mode() == vkb::Window::WindowMode::Headless))
+	if (true)
 	{
 		submit_info.waitSemaphoreCount   = 1;
 		submit_info.pWaitSemaphores      = &semaphores.acquired_image_ready;
@@ -94,6 +101,8 @@ void ApiVulkanSample::update(float delta_time)
 	{
 		view_updated = true;
 	}
+
+	platform->call_hook(vkb::Hook::PostDraw, [this](vkb::Plugin *plugin) { plugin->on_post_draw(get_render_context()); });
 }
 
 void ApiVulkanSample::resize(const uint32_t, const uint32_t)
@@ -426,7 +435,7 @@ void ApiVulkanSample::update_overlay(float delta_time)
 {
 	if (gui)
 	{
-		gui->show_simple_window(get_name(), vkb::to_u32(fps), [this]() {
+		gui->show_simple_window(get_name(), vkb::to_u32(1.0f / delta_time), [this]() {
 			on_update_ui_overlay(gui->get_drawer());
 		});
 

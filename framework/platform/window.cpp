@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2020, Arm Limited and Contributors
+/* Copyright (c) 2018-2021, Arm Limited and Contributors
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,10 +21,8 @@
 
 namespace vkb
 {
-Window::Window(Platform &platform, uint32_t width, uint32_t height) :
-    platform{platform},
-    width{width},
-    height{height}
+Window::Window(const Extent &extent, const WindowProperties &properties) :
+    extent{extent}, properties{properties}
 {
 }
 
@@ -32,30 +30,24 @@ void Window::process_events()
 {
 }
 
-Platform &Window::get_platform()
+Extent Window::resize(const Extent &new_extent)
 {
-	return platform;
+	if (properties.resizable)
+	{
+		extent.width  = new_extent.width;
+		extent.height = new_extent.height;
+	}
+
+	return extent;
 }
 
-void Window::resize(uint32_t width, uint32_t height)
+const Extent &Window::get_extent() const
 {
-	this->width  = width;
-	this->height = height;
-}
-
-uint32_t Window::get_width()
-{
-	return width;
-}
-
-uint32_t Window::get_height()
-{
-	return height;
+	return extent;
 }
 
 float Window::get_content_scale_factor() const
 {
 	return 1.0f;
 }
-
 }        // namespace vkb

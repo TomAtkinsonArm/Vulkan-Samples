@@ -17,6 +17,7 @@
 
 #include "platform.h"
 
+#include <algorithm>
 #include <ctime>
 #include <mutex>
 #include <vector>
@@ -30,6 +31,7 @@
 #include "common/logging.h"
 #include "platform/filesystem.h"
 #include "platform/parsers/CLI11.h"
+#include "platform/plugins/plugin.h"
 
 namespace vkb
 {
@@ -51,11 +53,8 @@ FlagCommand       Platform::batch_categories(FlagType::ManyValues, "category", "
 FlagCommand       Platform::batch_tags(FlagType::ManyValues, "tag", "t", "A tag to run in batch mode, --tag={any,Arm}");
 SubCommand        Platform::batch("batch", "Run multiple samples", {&Platform::batch_categories, &Platform::batch_tags});
 
-bool Platform::initialize(std::unique_ptr<Application> &&app)
+bool Platform::initialize(const std::vector<Plugin *> &plugins = {})
 {
-	assert(app && "Application is not valid");
-	active_app = std::move(app);
-
 	auto sinks = get_platform_sinks();
 
 	auto logger = std::make_shared<spdlog::logger>("logger", sinks.begin(), sinks.end());
@@ -89,70 +88,126 @@ bool Platform::initialize(std::unique_ptr<Application> &&app)
 		return false;
 	}
 
-	// Set the app to execute as a benchmark
-	if (parser->contains(&Platform::benchmark))
+	parser = std::make_unique<Parser>(plugins);
+
+	// Process command line arguments
+	if (!parser->parse(arguments))
 	{
-		benchmark_mode             = true;
-		total_benchmark_frames     = parser->as<uint32_t>(&Platform::benchmark);
-		remaining_benchmark_frames = total_benchmark_frames;
-		active_app->set_benchmark_mode(true);
+		return false;
 	}
 
-	// Set the app as headless
-	active_app->set_headless(parser->contains(&Platform::headless));
+	OptionalProperties properties;
 
-	create_window();
+	// Subscribe plugins to requested hooks and store activated plugins
+	for (auto *plugin : plugins)
+	{
+		OptionalProperties requested_properties;
+		if (plugin->activate_plugin(this, *parser.get(), &requested_properties))
+		{
+			properties = combine<OptionalProperties>(properties, requested_properties);
+
+			auto &plugin_hooks = plugin->get_hooks();
+			for (auto hook : plugin_hooks)
+			{
+				auto it = hooks.find(hook);
+
+				if (it == hooks.end())
+				{
+					auto r = hooks.emplace(hook, std::vector<Plugin *>{});
+
+					if (r.second)
+					{
+						it = r.first;
+					}
+				}
+
+				it->second.emplace_back(plugin);
+			}
+
+			active_plugins.emplace_back(plugin);
+		}
+	}
+
+	// Sort out stuff here
+	create_window({}, {});
 
 	if (!window)
 	{
-		throw std::runtime_error("Window creation failed, make sure platform overrides create_window() and creates a valid window.");
+		LOGE("Window creation failed!");
+		return false;
 	}
 
-	LOGI("Window created");
+	if (!app_requested())
+	{
+		LOGE("An app was not requested, can not continue");
+		return false;
+	}
 
 	return true;
 }
 
 bool Platform::prepare()
 {
-	if (active_app)
-	{
-		return active_app->prepare(*this);
-	}
-	return false;
+	return true;
 }
 
 void Platform::main_loop()
 {
 	while (!window->should_close())
 	{
-		run();
-
-		window->process_events();
-	}
-}
-
-void Platform::run()
-{
-	if (benchmark_mode)
-	{
-		timer.start();
-
-		if (remaining_benchmark_frames == 0)
+		try
 		{
-			auto time_taken = timer.stop();
-			LOGI("Benchmark completed in {} seconds (ran {} frames, averaged {} fps)", time_taken, total_benchmark_frames, total_benchmark_frames / time_taken);
-			close();
-			return;
+			// Load the requested app
+			if (app_requested())
+			{
+				if (!start_app())
+				{
+					throw std::runtime_error{"Failed to load Application"};
+				}
+
+				// Compensate for load times of the app by updating a single frame
+				// TODO: Setting the framerate to 60 fps isnt a long term fix. There should be a way of disabling features of app from running on the first frame possibly a skip_frame flag in Application::update()
+				timer.tick<Timer::Seconds>();
+				active_app->update(0.01667f);
+			}
+
+			update();
+
+			window->process_events();
+		}
+		catch (std::exception e)
+		{
+			LOGE("{}", e.what());
+			LOGE("Failed when running application {}", active_app->get_name());
+			LOGI("Attempting to continue");
+			call_hook(Hook::OnAppError, [this](Plugin *plugin) { plugin->on_app_error(active_app->get_name()); });
+			if (!app_requested())
+			{
+				LOGI("No application queued");
+				// TODO: There is definitely a better way of managing errors created by several applications. Currently out of scope
+				// Propogate last error
+				throw e;
+			}
 		}
 	}
-
-	if (active_app->is_focused() || active_app->is_benchmark_mode())
-	{
-		active_app->step();
-		remaining_benchmark_frames--;
-	}
 }
+
+void Platform::update()
+{
+	auto delta_time = static_cast<float>(timer.tick<Timer::Seconds>());
+
+	if (focused)
+	{
+		call_hook(Hook::OnUpdate, [&delta_time](Plugin *plugin) { plugin->on_update(delta_time); });
+
+		if (render_properties.use_fixed_simulation_fps)
+		{
+			delta_time = render_properties.fixed_simulation_fps;
+		}
+
+		active_app->update(delta_time);
+	}
+}        // namespace vkb
 
 std::unique_ptr<RenderContext> Platform::create_render_context(Device &device, VkSurfaceKHR surface) const
 {
@@ -178,8 +233,17 @@ std::unique_ptr<RenderContext> Platform::create_render_context(Device &device, V
 
 void Platform::terminate(ExitCode code)
 {
+	if (code == ExitCode::UnableToRun)
+	{
+		parser->print_help();
+	}
+
 	if (active_app)
 	{
+		std::string id = active_app->get_name();
+
+		call_hook(Hook::OnAppClose, [&id](Plugin *plugin) { plugin->on_app_close(id); });
+
 		active_app->finish();
 	}
 
@@ -187,14 +251,46 @@ void Platform::terminate(ExitCode code)
 	window.reset();
 
 	spdlog::drop_all();
+
+	call_hook(Hook::OnPlatformClose, [](Plugin *plugin) { plugin->on_platform_close(); });
 }
 
 void Platform::close() const
 {
-	window->close();
+	if (window)
+	{
+		window->close();
+	}
 }
 
-const std::string &Platform::get_external_storage_directory()
+void Platform::request_properties(PlatformProperties properties)
+{
+}
+
+void Platform::call_hook(const Hook &hook, std::function<void(Plugin *)> fn) const
+{
+	auto res = hooks.find(hook);
+	if (res != hooks.end())
+	{
+		for (auto plugin : res->second)
+		{
+			fn(plugin);
+		}
+	}
+}
+
+void Platform::set_focus(bool focused)
+{
+	this->focused = focused;
+}
+
+void Platform::set_window(std::unique_ptr<Window> &&window)
+{
+	this->window = std::move(window);
+}
+
+const std::string &
+    Platform::get_external_storage_directory()
 {
 	return external_storage_directory;
 }
@@ -207,6 +303,12 @@ const std::string &Platform::get_temp_directory()
 float Platform::get_dpi_factor() const
 {
 	return window->get_dpi_factor();
+}
+
+Application &Platform::get_app()
+{
+	assert(active_app && "Application is not valid");
+	return *active_app;
 }
 
 Application &Platform::get_app() const
@@ -240,10 +342,78 @@ void Platform::set_temp_directory(const std::string &dir)
 	temp_directory = dir;
 }
 
+void Platform::input_event(const InputEvent &input_event)
+{
+	if (properties.process_input_events && active_app)
+	{
+		active_app->input_event(input_event);
+	}
+}
+
 std::vector<spdlog::sink_ptr> Platform::get_platform_sinks()
 {
 	std::vector<spdlog::sink_ptr> sinks;
 	sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 	return sinks;
+}
+
+bool Platform::app_requested()
+{
+	return requested_app != nullptr;
+}
+
+void Platform::request_application(const apps::AppInfo *app)
+{
+	requested_app = app;
+}
+
+bool Platform::start_app()
+{
+	auto *requested_app_info = requested_app;
+	// Reset early incase error in preperation stage
+	requested_app = nullptr;
+
+	if (active_app)
+	{
+		auto execution_time = timer.stop();
+		LOGI("Closing App (Runtime: {:.1f})", execution_time);
+
+		auto app_id = active_app->get_name();
+
+		active_app->finish();
+	}
+
+	active_app = requested_app_info->create();
+
+	active_app->set_name(requested_app_info->id);
+
+	if (!active_app)
+	{
+		LOGE("Failed to create a valid vulkan app.");
+		return false;
+	}
+
+	if (!active_app->prepare(*this))
+	{
+		LOGE("Failed to prepare vulkan app.");
+		return false;
+	}
+
+	call_hook(Hook::OnAppStart, [&](Plugin *plugin) { plugin->on_app_start(requested_app_info->id); });
+
+	return true;
+}
+
+void Platform::resize(uint32_t width, uint32_t height)
+{
+	if (window)
+	{
+		auto actual_extent = window->resize({width, height});
+
+		if (active_app)
+		{
+			active_app->resize(actual_extent.width, actual_extent.height);
+		}
+	}
 }
 }        // namespace vkb

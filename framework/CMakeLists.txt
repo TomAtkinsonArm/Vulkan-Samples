@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 
 project(framework LANGUAGES C CXX)
 
@@ -68,6 +68,7 @@ set(COMMON_FILES
     common/error.h
     common/utils.h
     common/strings.h
+    common/tags.h
     # Source Files
     common/error.cpp
     common/vk_common.cpp
@@ -251,6 +252,10 @@ set(PLATFORM_FILES
     platform/configuration.h
     platform/parser.h
     platform/headless_window.h
+    platform/plugins/parser.h
+    platform/plugins/plugin.h
+    platform/plugins/plugin_base.h
+    platform/plugins/flag.h
 
     # Source Files
     platform/headless_window.cpp
@@ -260,7 +265,10 @@ set(PLATFORM_FILES
     platform/filesystem.cpp
     platform/input_events.cpp
     platform/configuration.cpp
-    platform/parser.cpp)
+    platform/parser.cpp
+    platform/plugins/plugin.cpp
+    platform/plugins/parser.cpp
+    platform/plugins/flag.cpp)
 
 set(PARSER_FILES
     # Header Files
@@ -282,6 +290,18 @@ set(GRAPHING_FILES
     graphing/scene_graph.cpp
     graphing/framework_graph.cpp)
 
+set(DESKTOP_FILES
+    # Header Files
+    platform/desktop/headless_window.h
+    platform/desktop/glfw_window.h
+    platform/desktop/desktop_platform.h
+
+    # Source Files
+    platform/desktop/headless_window.cpp
+    platform/desktop/glfw_window.cpp
+    platform/desktop/desktop_platform.cpp
+)
+
 set(ANDROID_FILES
     # Header Files
     platform/android/android_platform.h
@@ -292,29 +312,23 @@ set(ANDROID_FILES
 
 set(WINDOWS_FILES
     # Header Files
-    platform/windows/windows_platform.h
+    platform/desktop/windows/windows_platform.h
     # Source Files
-    platform/windows/windows_platform.cpp)
+    platform/desktop/windows/windows_platform.cpp)
 
 set(UNIX_FILES
     # Header Files
-    platform/unix/unix_platform.h
+    platform/desktop/unix/unix_platform.h
     # Source Files
-    platform/unix/unix_platform.cpp)
-
-set(GLFW_FILES
-    # Header Files
-    platform/glfw_window.h
-    # Source Files
-    platform/glfw_window.cpp)
+    platform/desktop/unix/unix_platform.cpp)
 
 set(LINUX_D2D_FILES
     # Header Files
-    platform/unix/unix_d2d_platform.h
-    platform/unix/direct_window.h
+    platform/desktop/unix/unix_d2d_platform.h
+    platform/desktop/unix/direct_window.h
     # Source Files
-    platform/unix/unix_d2d_platform.cpp
-    platform/unix/direct_window.cpp) 
+    platform/desktop/unix/unix_d2d_platform.cpp
+    platform/desktop/unix/direct_window.cpp) 
 
 source_group("\\" FILES ${FRAMEWORK_FILES})
 source_group("common\\" FILES ${COMMON_FILES})
@@ -353,7 +367,7 @@ set(PROJECT_FILES
 # Add files based on platform
 if(VKB_DIRECT_2_DISPLAY)
     message(STATUS "VKB_DIRECT_2_DISPLAY enabled, forcing D2D support")
-    list(APPEND PROJECT_FILES ${LINUX_D2D_FILES})
+    list(APPEND PROJECT_FILES ${LINUX_D2D_FILES} ${DESKTOP_FILES})
 else()
     # Add files based on platform
     if(ANDROID)
@@ -361,15 +375,15 @@ else()
         message(STATUS "Android platform detected")
     else()
         if(DIRECT_TO_DISPLAY)
-            list(APPEND PROJECT_FILES ${LINUX_D2D_FILES})
+            list(APPEND PROJECT_FILES ${LINUX_D2D_FILES} ${DESKTOP_FILES})
             message(STATUS "Unix d2d platform detected")
         else()
-            list(APPEND PROJECT_FILES ${GLFW_FILES})
+            list(APPEND PROJECT_FILES ${GLFW_FILES} ${DESKTOP_FILES})
             if(WIN32)
-                list(APPEND PROJECT_FILES ${WINDOWS_FILES})
+                list(APPEND PROJECT_FILES ${WINDOWS_FILES} ${DESKTOP_FILES})
                 message(STATUS "Windows platform detected")
             else()
-                list(APPEND PROJECT_FILES ${UNIX_FILES})
+                list(APPEND PROJECT_FILES ${UNIX_FILES} ${DESKTOP_FILES})
                 message(STATUS "Unix platform detected")
             endif()
         endif()
@@ -412,10 +426,10 @@ if(${VKB_WARNINGS_AS_ERRORS})
     endif()
 endif()
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC $<TARGET_PROPERTY:plugins,INCLUDE_DIRECTORIES> ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Link third party libraries
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PUBLIC
     volk
     ktx
     stb
@@ -431,7 +445,9 @@ target_link_libraries(${PROJECT_NAME}
     glslang-default-resource-limits
     spdlog
     ctpl
-    CLI11::CLI11)
+    CLI11::CLI11
+    apps
+    plugins)
 
 if(${NEED_LINK_ATOMIC})
     target_link_libraries(${PROJECT_NAME} atomic)
@@ -439,11 +455,11 @@ endif()
 
 # Link platform specific libraries
 if(ANDROID)
-    target_link_libraries(${PROJECT_NAME} log android native_app_glue)
+    target_link_libraries(${PROJECT_NAME} PUBLIC log android native_app_glue)
 else()
     if (DIRECT_TO_DISPLAY)
-        target_link_libraries(${PROJECT_NAME} dl)
+        target_link_libraries(${PROJECT_NAME} PRIVATE dl)
     else()
-        target_link_libraries(${PROJECT_NAME} glfw)
+        target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
     endif()
 endif()

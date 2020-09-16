@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2020, Arm Limited and Contributors
+/* Copyright (c) 2018-2021, Arm Limited and Contributors
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -19,11 +19,10 @@
 
 #include "common/vk_common.h"
 #include "core/instance.h"
+#include "platform/properties.h"
 
 namespace vkb
 {
-class Platform;
-
 /**
  * @brief An interface class, declaring the behaviour of a Window
  */
@@ -32,11 +31,9 @@ class Window
   public:
 	/**
 	 * @brief Constructs a Window
-	 * @param platform The platform this window is created for
-	 * @param width The width of the window
-	 * @param height The height of the window
+	 * @param properties The preferred configuration of the window
 	 */
-	Window(Platform &platform, uint32_t width, uint32_t height);
+	Window(const Extent &extent, const WindowProperties &properties);
 
 	virtual ~Window() = default;
 
@@ -72,20 +69,18 @@ class Window
      */
 	virtual float get_content_scale_factor() const;
 
-	Platform &get_platform();
+	/**
+	 * @brief Attempt to resize the window - not guarunteed to change
+	 * 
+	 * @param extent The preferred window extent
+	 * @return Extent The new window extent
+	 */
+	Extent resize(const Extent &extent);
 
-	void resize(uint32_t width, uint32_t height);
-
-	uint32_t get_width();
-
-	uint32_t get_height();
-
-  protected:
-	Platform &platform;
+	const Extent &get_extent() const;
 
   private:
-	uint32_t width;
-
-	uint32_t height;
+	WindowProperties properties;
+	Extent           extent;
 };
 }        // namespace vkb

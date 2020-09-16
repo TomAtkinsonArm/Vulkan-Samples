@@ -1,0 +1,91 @@
+/* Copyright (c) 2020-2021, Arm Limited and Contributors
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 the "License";
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "screenshot.h"
+
+#include <chrono>
+#include <iomanip>
+
+#include "rendering/render_context.h"
+
+namespace plugins
+{
+vkb::Flag screenshot_flag        = {"screenshot", vkb::Flag::Type::FlagWithOneArg, "Take a screenshot at a given frame. frame number <arg>"};
+vkb::Flag screenshot_output_flag = {"screenshot-output", vkb::Flag::Type::FlagWithOneArg, "Declare an output name for the image. File name <arg>"};
+
+Screenshot::Screenshot() :
+    ScreenshotTags("Screenshot",
+                   "Save a screenshot of a specific frame",
+                   {vkb::Hook::OnUpdate, vkb::Hook::OnAppStart, vkb::Hook::PostDraw},
+                   {vkb::FlagGroup(vkb::FlagGroup::Type::Individual, true, {&screenshot_flag}), vkb::FlagGroup(vkb::FlagGroup::Type::Individual, true, {&screenshot_output_flag})})
+{
+}
+
+bool Screenshot::is_active(const vkb::Parser &parser)
+{
+	return parser.contains(screenshot_flag);
+}
+
+void Screenshot::init(const vkb::Parser &parser, vkb::OptionalProperties* properties)
+{
+	if (parser.contains(screenshot_flag))
+	{
+		frame_number = parser.get_int(screenshot_flag);
+
+		if (parser.contains(screenshot_output_flag))
+		{
+			output_path     = parser.get_string(screenshot_output_flag);
+			output_path_set = true;
+		}
+	}
+}
+
+void Screenshot::on_update(float delta_time)
+{
+	current_frame++;
+}
+
+void Screenshot::on_app_start(const std::string &name)
+{
+	current_app_name = name;
+	current_frame    = 0;
+}
+
+void Screenshot::on_post_draw(vkb::RenderContext &context)
+{
+	if (current_frame == frame_number)
+	{
+		if (!output_path_set)
+		{
+			// Create generic image path. <app name>-<current timestamp>.png
+			auto        timestamp = std::chrono::system_clock::now();
+			std::time_t now_tt    = std::chrono::system_clock::to_time_t(timestamp);
+			std::tm     tm        = *std::localtime(&now_tt);
+
+			char buffer[30];
+			strftime(buffer, sizeof(buffer), "%G-%m-%d---%H-%M-%S", &tm);
+
+			std::stringstream stream;
+			stream << current_app_name << "-" << buffer;
+
+			output_path = stream.str();
+		}
+
+		screenshot(context, output_path);
+	}
+}
+}        // namespace plugins
