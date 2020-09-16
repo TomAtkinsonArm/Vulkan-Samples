@@ -142,6 +142,14 @@ function(add_project)
 
     target_link_libraries(${PROJECT_NAME} PRIVATE framework)
 
+    # Link the test framework
+    if(VKB_BUILD_TESTS)
+        target_include_directories(${PROJECT_NAME} PUBLIC
+            $<TARGET_PROPERTY:test_framework,INCLUDE_DIRECTORIES>)
+        target_link_libraries(${PROJECT_NAME} PUBLIC test_framework)
+    endif()
+
+
     # Link against extra project specific libraries
     if(TARGET_LIBS)
         target_link_libraries(${PROJECT_NAME} PRIVATE ${TARGET_LIBS})
