@@ -10,8 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: lsb_release -sc
-      - run: cat /etc/apt/sources.list
+      # - run: sudo add-apt-repository "deb http://us.archive.ubuntu.com/ubuntu/ focal universe"
+      - run: sudo apt-get update
+      - run: sudo apt-get install xorg-dev libglu1-mesa-dev
+      # - run: add-apt-repository "deb http://archive.canonical.com/ubuntu focal partner"
 
   # build:
   #   name: "Build ${{ matrix.platform }} in ${{ matrix.build_type }}"
