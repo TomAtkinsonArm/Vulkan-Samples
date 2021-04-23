@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2020, Arm Limited and Contributors
+/* Copyright (c) 2018-2021, Arm Limited and Contributors
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -34,10 +34,11 @@ class AndroidWindow : public Window
 	/**
 	 * @brief Constructor
 	 * @param platform The platform this window is created for
+	 * @param mode The mode that the window should run in (ignored on android)
 	 * @param window A reference to the location of the Android native window
 	 * @param headless Whether the application is being rendered in headless mode
 	 */
-	AndroidWindow(Platform &platform, ANativeWindow *&window, bool headless = false);
+	AndroidWindow(AndroidPlatform *platform, ANativeWindow*& window, const Window::OptionalProperties& properties);
 
 	virtual ~AndroidWindow() = default;
 
@@ -47,6 +48,8 @@ class AndroidWindow : public Window
 	 */
 	virtual VkSurfaceKHR create_surface(Instance &instance) override;
 
+	virtual void process_events() override;
+
 	virtual bool should_close() override;
 
 	virtual void close() override;
@@ -54,6 +57,8 @@ class AndroidWindow : public Window
 	virtual float get_dpi_factor() const override;
 
   private:
+	AndroidPlatform *platform;
+
 	// Handle to the android window
 	ANativeWindow *&handle;
 
