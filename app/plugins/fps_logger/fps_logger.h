@@ -35,6 +35,8 @@ class FpsLogger : public FpsLoggerTags
 
 	void on_update(float delta_time) override;
 
+	vkb::FlagCommand fps_flag = {"log-fps", vkb::Flag::Type::FlagOnly, "Toggle fps logging"};
+
   private:
 	vkb::Timer timer;
 

@@ -87,7 +87,7 @@ Parser::Parser(const std::vector<Plugin *> &plugins)
 		{
 			// Append all entrypoint flag groups
 			auto   entry  = it->first;
-			auto & groups = entry->get_flag_groups();
+			auto & groups = entry->get_cli_commands();
 			size_t i      = 0;
 			for (auto &group : groups)
 			{
@@ -105,7 +105,7 @@ Parser::Parser(const std::vector<Plugin *> &plugins)
 			size_t i = 0;
 			for (auto ext : it->second)
 			{
-				auto & groups = ext->get_flag_groups();
+				auto & groups = ext->get_cli_commands();
 				size_t i      = 0;
 				for (auto &group : groups)
 				{
@@ -129,7 +129,7 @@ Parser::Parser(const std::vector<Plugin *> &plugins)
 	std::set<Flag *> unique_flags;
 	for (auto ext : plugins)
 	{
-		auto &groups = ext->get_flag_groups();
+		auto &groups = ext->get_cli_commands();
 		for (auto &group : groups)
 		{
 			auto group_flags = group.get_flags();
@@ -218,7 +218,7 @@ Parser::Parser(const std::vector<Plugin *> &plugins)
 		help_lines.push_back(fmt::format("{}{}", spacer, plugin->get_description()));
 		help_lines.push_back("");
 
-		for (auto group : plugin->get_flag_groups())
+		for (auto group : plugin->get_cli_commands())
 		{
 			for (auto flag : group.get_flags())
 			{

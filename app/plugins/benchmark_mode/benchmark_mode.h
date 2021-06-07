@@ -34,13 +34,15 @@ class BenchmarkMode : public BenchmarkModeTags
 
 	virtual bool is_active(const vkb::Parser &parser) override;
 
-	virtual void init(const vkb::Parser &parser, vkb::OptionalProperties* properties) override;
+	virtual void init(const vkb::Parser &parser, vkb::OptionalProperties *properties) override;
 
 	virtual void on_update(float delta_time) override;
 
 	virtual void on_app_start(const std::string &app_info) override;
 
 	virtual void on_app_close(const std::string &app_info) override;
+
+	vkb::FlagCommand benchmark_flag = {vkb::FlagType::FlagOnly, "benchmark", "", "Toggles using benchmark mode"};
 
   private:
 	uint32_t total_frames{0};

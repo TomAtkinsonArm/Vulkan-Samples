@@ -39,11 +39,21 @@ class BatchMode : public BatchModeTags
 
 	virtual bool is_active(const vkb::Parser &parser) override;
 
-	virtual void init(const vkb::Parser &parser, vkb::OptionalProperties* properties) override;
+	virtual void init(const vkb::Parser &parser, vkb::OptionalProperties *properties) override;
 
 	virtual void on_update(float delta_time) override;
 
 	virtual void on_app_error(const std::string &app_id) override;
+
+	vkb::FlagCommand duration_flag{vkb::FlagType::OneValue, "duration", "", "The duration which a configuration should run for in seconds"};
+
+	vkb::FlagCommand wrap_flag{vkb::FlagType::FlagOnly, "wrap-to-start", "", "Once all configurations have run wrap to the start"};
+
+	vkb::FlagCommand tags_flag{vkb::FlagType::ManyValues, "tag", "T", "Filter samples by tags"};
+
+	vkb::FlagCommand categories_flag{vkb::FlagType::ManyValues, "category", "C", "Filter samples by categories"};
+
+	vkb::SubCommand batch_cmd{"batch", "Enable batch mode", {&duration_flag, &wrap_flag, &tags_flag, &categories_flag}};
 
   private:
 	/// The list of suitable samples to be run in conjunction with batch mode

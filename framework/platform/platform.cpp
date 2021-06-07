@@ -342,14 +342,6 @@ void Platform::set_temp_directory(const std::string &dir)
 	temp_directory = dir;
 }
 
-void Platform::input_event(const InputEvent &input_event)
-{
-	if (properties.process_input_events && active_app)
-	{
-		active_app->input_event(input_event);
-	}
-}
-
 std::vector<spdlog::sink_ptr> Platform::get_platform_sinks()
 {
 	std::vector<spdlog::sink_ptr> sinks;
@@ -404,11 +396,46 @@ bool Platform::start_app()
 	return true;
 }
 
+void Platform::create_window(const Extent &initial_extent, const WindowProperties &properties)
+{
+	// Clamp window dimensions
+	auto extent = clamp_extent(initial_extent);
+
+	if (properties.mode == WindowMode::Headless)
+	{
+		window = std::make_unique<HeadlessWindow>(extent, properties);
+	}
+	else
+	{
+		window = std::make_unique<GlfwWindow>(this, extent, properties);
+	}
+}
+
+void Platform::input_event(const InputEvent &input_event)
+{
+	if (properties.process_input_events && active_app)
+	{
+		active_app->input_event(input_event);
+	}
+
+	if (input_event.get_source() == EventSource::Keyboard)
+	{
+		const auto &key_event = static_cast<const KeyInputEvent &>(input_event);
+
+		if (key_event.get_code() == KeyCode::Back ||
+		    key_event.get_code() == KeyCode::Escape)
+		{
+			close();
+		}
+	}
+}
+
 void Platform::resize(uint32_t width, uint32_t height)
 {
+	auto extent = Extent{std::max<uint32_t>(width, 420), std::max<uint32_t>(height, 320)};
 	if (window)
 	{
-		auto actual_extent = window->resize({width, height});
+		auto actual_extent = window->resize(extent);
 
 		if (active_app)
 		{

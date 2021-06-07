@@ -34,11 +34,11 @@ template <typename... TAGS>
 class PluginBase : public Plugin, public Tag<TAGS...>
 {
   public:
-	PluginBase(const std::string name, const std::string description, const std::vector<Hook> &hooks = {}, const std::vector<FlagGroup> &groups = {});
+	PluginBase(const std::string name, const std::string description, const std::vector<Hook> &hooks = {}, const std::vector<Command *> &commands = {});
 
 	virtual ~PluginBase() = default;
 
-	virtual const std::vector<FlagGroup> &get_flag_groups() const override;
+	virtual const std::vector<FlagGroup> &get_cli_commands() const override;
 	virtual const std::vector<Hook> &     get_hooks() const override;
 	virtual bool                          has_tag(TagID id) const override;
 
@@ -54,19 +54,19 @@ class PluginBase : public Plugin, public Tag<TAGS...>
 	Tag<TAGS...> *tags = reinterpret_cast<Tag<TAGS...> *>(this);
 
 	std::vector<Hook>      hooks;
-	std::vector<FlagGroup> groups;
+	std::vector<Command *> commands;
 };
 
 template <typename... TAGS>
-PluginBase<TAGS...>::PluginBase(const std::string name, const std::string description, const std::vector<Hook> &hooks, const std::vector<FlagGroup> &groups) :
-    Plugin(name, description), hooks{hooks}, groups{groups}
+PluginBase<TAGS...>::PluginBase(const std::string name, const std::string description, const std::vector<Hook> &hooks, const std::vector<Command *> &commands) :
+    Plugin(name, description), hooks{hooks}, commands{commands}
 {
 }
 
 template <typename... TAGS>
-const std::vector<FlagGroup> &PluginBase<TAGS...>::get_flag_groups() const
+const std::vector<FlagGroup> &PluginBase<TAGS...>::get_cli_commands() const
 {
-	return groups;
+	return commands;
 }
 
 template <typename... TAGS>

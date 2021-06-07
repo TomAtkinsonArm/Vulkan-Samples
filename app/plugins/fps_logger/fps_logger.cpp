@@ -19,12 +19,10 @@
 
 namespace plugins
 {
-vkb::Flag fps_flag = {"log-fps", vkb::Flag::Type::FlagOnly, "Toggle fps logging"};
-
 FpsLogger::FpsLogger() :
     FpsLoggerTags("FPS Logger",
                   "Enable FPS logging.",
-                  {vkb::Hook::OnUpdate, vkb::Hook::OnAppStart}, {vkb::FlagGroup(vkb::FlagGroup::Type::Individual, true, {&fps_flag})})
+                  {vkb::Hook::OnUpdate, vkb::Hook::OnAppStart}, {&fps_flag})
 {
 }
 

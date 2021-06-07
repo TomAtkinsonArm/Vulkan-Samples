@@ -22,11 +22,11 @@
 #include <vector>
 
 #include "common/tags.h"
+#include "platform/parser.h"
 #include "platform/properties.h"
+
 namespace vkb
 {
-class FlagGroup;
-class Parser;
 class Platform;
 class RenderContext;
 struct PlatformProperties;
@@ -52,6 +52,8 @@ struct Stopping
 struct Passive
 {};
 }        // namespace tags
+
+std::vector<Command *> generate_cli_commands(const std::vector<Plugin *> &plugins);
 
 /**
  * @brief Hooks are points in the project that an plugin can subscribe too. These can be expanded on to implement more behaviour in the future
@@ -102,7 +104,7 @@ class Plugin
 	 */
 	bool activate_plugin(Platform *platform, const Parser &parser, OptionalProperties *properties);
 
-	virtual const std::vector<FlagGroup> &get_flag_groups() const = 0;
+	virtual const std::vector<Command *> &get_cli_commands() const = 0;
 
 	/**
 	 * @brief Return a list of hooks that an plugin wants to subscribe to

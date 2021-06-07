@@ -19,18 +19,10 @@
 
 #include "vulkan_sample.h"
 
+#include "platform/parser.h"
+
 namespace plugins
 {
-vkb::Flag batch_cmd{"batch", vkb::Flag::Type::Command, "Enable batch mode"};
-
-vkb::Flag duration_flag{"duration", vkb::Flag::Type::FlagWithOneArg, "The duration which a configuration should run for in seconds"};
-
-vkb::Flag wrap_flag{"wrap-to-start", vkb::Flag::Type::FlagOnly, "Once all configurations have run wrap to the start"};
-
-vkb::Flag tags_flag{"T", vkb::Flag::Type::FlagWithManyArg, "Filter samples by tags"};
-
-vkb::Flag categories_flag{"C", vkb::Flag::Type::FlagWithManyArg, "Filter samples by categories"};
-
 using BatchModeSampleIter = std::vector<apps::AppInfo *>::const_iterator;
 
 BatchMode::BatchMode() :
@@ -40,10 +32,7 @@ BatchMode::BatchMode() :
                       vkb::Hook::OnUpdate,
                       vkb::Hook::OnAppError,
                   },
-                  {
-                      vkb::FlagGroup(vkb::FlagGroup::Type::Individual, false, {&batch_cmd}),
-                      vkb::FlagGroup(vkb::FlagGroup::Type::Individual, true, {&duration_flag, &tags_flag, &categories_flag, &wrap_flag}),
-                  })
+                  {&batch_cmd})
 {
 }
 

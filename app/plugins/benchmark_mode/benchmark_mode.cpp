@@ -21,13 +21,11 @@
 
 namespace plugins
 {
-vkb::Flag benchmark_flag = {"benchmark", vkb::Flag::Type::FlagOnly, "Toggles using benchmark mode"};
-
 BenchmarkMode::BenchmarkMode() :
     BenchmarkModeTags("Benchmark Mode",
                       "Log frame averages after running an app.",
                       {vkb::Hook::OnUpdate, vkb::Hook::OnAppStart, vkb::Hook::OnAppClose},
-                      {vkb::FlagGroup(vkb::FlagGroup::Type::Individual, true, {&benchmark_flag})})
+                      {&benchmark_flag})
 {
 }
 

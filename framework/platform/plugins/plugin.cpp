@@ -15,12 +15,17 @@
  * limitations under the License.
  */
 #include "plugin.h"
-#include "platform/plugins/parser.h"
 #include "platform/platform.h"
+#include "platform/plugins/parser.h"
 
 namespace vkb
 {
-bool Plugin::activate_plugin(Platform *p, const Parser &parser, OptionalProperties* properties)
+std::vector<Command *> generate_cli_commands(const std::vector<Plugin *> &plugins)
+{
+	
+}
+
+bool Plugin::activate_plugin(Platform *p, const Parser &parser, OptionalProperties *properties)
 {
 	platform = p;
 
