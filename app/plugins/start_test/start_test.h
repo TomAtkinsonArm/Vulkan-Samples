@@ -32,5 +32,7 @@ class StartTest : public StartTestTags
 	virtual bool is_active(const vkb::Parser &parser) override;
 
 	virtual void init(const vkb::Parser &parser, vkb::OptionalProperties *properties) override;
+
+	vkb::FlagCommand test_cmd = {vkb::FlagType::OneValue, "test", "", "Run a specific test"};
 };
 }        // namespace plugins

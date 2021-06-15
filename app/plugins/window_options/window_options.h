@@ -35,5 +35,12 @@ class WindowOptions : public WindowOptionsTags
 	virtual bool is_active(const vkb::Parser &parser) override;
 
 	virtual void init(const vkb::Parser &options, vkb::OptionalProperties *properties) override;
+
+	vkb::FlagCommand width_flag      = {vkb::FlagType::OneValue, "width", "", "Initial window width"};
+	vkb::FlagCommand height_flag     = {vkb::FlagType::OneValue, "height", "", "Initial window height"};
+	vkb::FlagCommand fullscreen_flag = {vkb::FlagType::FlagOnly, "fullscreen", "", "Run in fullscreen mode"};
+	vkb::FlagCommand headless_flag   = {vkb::FlagType::FlagOnly, "headless", "", "Run in headless mode"};
+	vkb::FlagCommand borderless_flag = {vkb::FlagType::FlagOnly, "borderless", "", "Run in borderless mode"};
+	vkb::FlagCommand vsync_flag      = {vkb::FlagType::OneValue, "vsync", "", "Force vsync {ON | OFF}. If not set samples decide how vsync is set"};
 };
 }        // namespace plugins

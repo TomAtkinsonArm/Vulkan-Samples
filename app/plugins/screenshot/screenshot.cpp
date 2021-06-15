@@ -24,14 +24,11 @@
 
 namespace plugins
 {
-vkb::Flag screenshot_flag        = {"screenshot", vkb::Flag::Type::FlagWithOneArg, "Take a screenshot at a given frame. frame number <arg>"};
-vkb::Flag screenshot_output_flag = {"screenshot-output", vkb::Flag::Type::FlagWithOneArg, "Declare an output name for the image. File name <arg>"};
-
 Screenshot::Screenshot() :
     ScreenshotTags("Screenshot",
                    "Save a screenshot of a specific frame",
                    {vkb::Hook::OnUpdate, vkb::Hook::OnAppStart, vkb::Hook::PostDraw},
-                   {vkb::FlagGroup(vkb::FlagGroup::Type::Individual, true, {&screenshot_flag}), vkb::FlagGroup(vkb::FlagGroup::Type::Individual, true, {&screenshot_output_flag})})
+                   {&screenshot_flag, &screenshot_output_flag})
 {
 }
 
@@ -40,7 +37,7 @@ bool Screenshot::is_active(const vkb::Parser &parser)
 	return parser.contains(screenshot_flag);
 }
 
-void Screenshot::init(const vkb::Parser &parser, vkb::OptionalProperties* properties)
+void Screenshot::init(const vkb::Parser &parser, vkb::OptionalProperties *properties)
 {
 	if (parser.contains(screenshot_flag))
 	{

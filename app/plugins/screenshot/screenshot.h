@@ -35,13 +35,16 @@ class Screenshot : public ScreenshotTags
 
 	virtual bool is_active(const vkb::Parser &parser) override;
 
-	virtual void init(const vkb::Parser &parser, vkb::OptionalProperties* properties) override;
+	virtual void init(const vkb::Parser &parser, vkb::OptionalProperties *properties) override;
 
 	virtual void on_update(float delta_time) override;
 
 	virtual void on_app_start(const std::string &app_info) override;
 
 	virtual void on_post_draw(vkb::RenderContext &context) override;
+
+	vkb::FlagCommand screenshot_flag = {vkb::FlagType::OneValue, "screenshot", "", "Take a screenshot at a given frame"};
+	vkb::FlagCommand screenshot_output_flag = {vkb::FlagType::OneValue, "screenshot-output", "", "Declare an output name for the image"};
 
   private:
 	uint32_t    current_frame = 0;

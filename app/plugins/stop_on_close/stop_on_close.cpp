@@ -21,12 +21,10 @@
 
 namespace plugins
 {
-vkb::Flag stop_cmd = {"stop-on-close", vkb::Flag::Type::FlagOnly, "Halt the application before closing"};
-
 StopOnClose::StopOnClose() :
     StopOnCloseTags("Stop on Close",
                     "Halt the application before exiting. (Desktop Only)",
-                    {vkb::Hook::OnPlatformClose}, {vkb::FlagGroup(vkb::FlagGroup::Type::Individual, true, {&stop_cmd})})
+                    {vkb::Hook::OnPlatformClose}, {&stop_cmd})
 {
 }
 
@@ -35,7 +33,7 @@ bool StopOnClose::is_active(const vkb::Parser &parser)
 	return parser.contains(stop_cmd);
 }
 
-void StopOnClose::init(const vkb::Parser &parser, vkb::OptionalProperties* properties)
+void StopOnClose::init(const vkb::Parser &parser, vkb::OptionalProperties *properties)
 {
 }
 

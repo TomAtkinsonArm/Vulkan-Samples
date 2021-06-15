@@ -19,14 +19,10 @@
 
 namespace plugins
 {
-vkb::Flag stop_after_flag = {"stop-after-frame",
-                             vkb::Flag::Type::FlagWithOneArg,
-                             "Stop the application after a certain number of frames"};
-
 StopAfter::StopAfter() :
     StopAfterTags("Stop After X",
                   "A collection of flags to stop the running application after a set period.",
-                  {vkb::Hook::OnUpdate}, {vkb::FlagGroup(vkb::FlagGroup::Type::UseOne, true, {&stop_after_flag})})
+                  {vkb::Hook::OnUpdate}, {&stop_after_frame_flag})
 {
 }
 

@@ -38,5 +38,7 @@ class StopOnClose : public StopOnCloseTags
 	virtual void init(const vkb::Parser &parser, vkb::OptionalProperties *properties) override;
 
 	virtual void on_platform_close() override;
+
+	vkb::FlagCommand stop_cmd = {vkb::FlagType::FlagOnly, "stop-on-close", "", "Halt the application before closing"};
 };
 }        // namespace plugins

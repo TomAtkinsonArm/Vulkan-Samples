@@ -36,6 +36,8 @@ class StopAfter : public StopAfterTags
 
 	virtual void on_update(float delta_time) override;
 
+	vkb::FlagCommand stop_after_frame_flag = {vkb::FlagType::OneValue, "stop-after-frame", "", "Stop the application after a certain number of frames"};
+
   private:
 	uint32_t remaining_frames{0};
 };

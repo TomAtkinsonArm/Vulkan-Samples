@@ -21,14 +21,10 @@
 
 namespace plugins
 {
-vkb::Flag app_cmd = {"app", vkb::Flag::Type::Positional, "Run a specific application"};
-
-vkb::Flag sample_cmd = {"sample", vkb::Flag::Type::CommandWithPositional, "Run a specific sample"};
-
 StartApp::StartApp() :
     StartAppTags("Apps",
                  "A collection of flags to samples and apps.",
-                 {}, {vkb::FlagGroup(vkb::FlagGroup::Type::UseOne, false, {&app_cmd, &sample_cmd})})
+                 {}, {&app_cmd, &sample_cmd})
 {
 }
 

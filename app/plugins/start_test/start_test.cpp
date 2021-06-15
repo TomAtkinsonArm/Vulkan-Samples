@@ -21,12 +21,12 @@
 
 namespace plugins
 {
-vkb::Flag test_cmd = {"test", vkb::Flag::Type::CommandWithPositional, "Run a specific test"};
+
 
 StartTest::StartTest() :
     StartTestTags("Tests",
                   "A collection of flags to run tests.",
-                  {}, {vkb::FlagGroup(vkb::FlagGroup::Type::UseOne, false, {&test_cmd})})
+                  {}, {&test_cmd})
 {
 }
 

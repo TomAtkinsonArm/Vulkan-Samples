@@ -21,24 +21,10 @@
 
 namespace plugins
 {
-vkb::Flag width_flag = {"width",
-                        vkb::Flag::Type::FlagWithOneArg,
-                        "Initial window width"};
-
-vkb::Flag height_flag = {"height",
-                         vkb::Flag::Type::FlagWithOneArg,
-                         "Initial window height"};
-
-vkb::Flag fullscreen_flag = {"fullscreen", vkb::Flag::Type::FlagOnly, "Run in fullscreen mode"};
-vkb::Flag headless_flag   = {"headless", vkb::Flag::Type::FlagOnly, "Run in headless mode"};
-vkb::Flag borderless_flag = {"borderless", vkb::Flag::Type::FlagOnly, "Run in borderless mode"};
-
-vkb::Flag vsync_flag = {"vsync", vkb::Flag::Type::FlagWithOneArg, "Force vsync {ON | OFF}. If not set samples decide how vsync is set"};
-
 WindowOptions::WindowOptions() :
     WindowOptionsTags("Window Options",
                       "A collection of flags to configure window used when running the application. Implementation may differ between platforms",
-                      {}, {vkb::FlagGroup(vkb::FlagGroup::Type::Individual, true, {&width_flag, &height_flag, &vsync_flag}), vkb::FlagGroup(vkb::FlagGroup::Type::UseOne, true, {&fullscreen_flag, &borderless_flag, &headless_flag})})
+                      {}, {&width_flag, &height_flag, &vsync_flag, &fullscreen_flag, &borderless_flag, &headless_flag})
 {
 }
 

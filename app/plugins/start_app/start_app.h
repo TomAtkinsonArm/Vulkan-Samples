@@ -32,5 +32,8 @@ class StartApp : public StartAppTags
 	virtual bool is_active(const vkb::Parser &parser) override;
 
 	virtual void init(const vkb::Parser &parser, vkb::OptionalProperties *properties) override;
+
+	vkb::PositionalCommand app_cmd = {"app", "Run a specific application"};
+	vkb::FlagCommand sample_cmd = {vkb::FlagType::OneValue, "sample", "s", "Run a specific sample"};
 };
 }        // namespace plugins
