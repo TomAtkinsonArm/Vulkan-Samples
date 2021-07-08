@@ -78,7 +78,7 @@ class CLI11CommandParser : public CommandParser
 	virtual bool contains(Command *command) const override;
 
   private:
-	std::vector<char *> _args;
+	std::vector<const char *> _args;
 
 	std::unique_ptr<CLI::App>                               _cli11;
 	std::unordered_map<Command *, CLI::Option *>            _options;

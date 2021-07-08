@@ -24,6 +24,8 @@
 
 namespace vkb
 {
+class AndroidPlatform;
+
 /**
  * @brief Wrapper for a ANativeWindow, handles the window behaviour (including headless mode on Android)
  *        This class should not be responsible for destroying the underlying data it points to
@@ -38,7 +40,7 @@ class AndroidWindow : public Window
 	 * @param window A reference to the location of the Android native window
 	 * @param headless Whether the application is being rendered in headless mode
 	 */
-	AndroidWindow(AndroidPlatform *platform, ANativeWindow*& window, const Window::OptionalProperties& properties);
+	AndroidWindow(AndroidPlatform *platform, ANativeWindow *&window, const Window::Properties &properties);
 
 	virtual ~AndroidWindow() = default;
 

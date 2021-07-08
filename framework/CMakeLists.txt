@@ -254,13 +254,11 @@ set(PLATFORM_FILES
     platform/configuration.h
     platform/parser.h
     platform/headless_window.h
-    platform/glfw_window.h
     platform/plugins/plugin.h
     platform/plugins/plugin_base.h
 
     # Source Files
     platform/headless_window.cpp
-    platform/glfw_window.cpp
     platform/application.cpp
     platform/platform.cpp
     platform/window.cpp
@@ -269,6 +267,13 @@ set(PLATFORM_FILES
     platform/configuration.cpp
     platform/parser.cpp
     platform/plugins/plugin.cpp)
+
+set(GLFW_FILES
+    # Header Files
+    platform/glfw_window.h
+    # Source Files
+    platform/glfw_window.cpp
+)
 
 set(PARSER_FILES
     # Header Files

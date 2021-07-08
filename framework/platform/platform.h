@@ -188,7 +188,6 @@ class Platform
 
 	bool  fixed_simulation_fps{false};
 	float simulation_frame_time = 0.016f;
-
 	bool process_input_events{true};
 
 	/// Static so can be set via JNI code in android_platform.cpp

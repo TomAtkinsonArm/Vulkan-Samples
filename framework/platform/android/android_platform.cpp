@@ -323,7 +323,6 @@ int32_t on_input_event(android_app *app, AInputEvent *input_event)
 		int32_t action   = AKeyEvent_getAction(input_event);
 
 		platform->input_event(KeyInputEvent{
-		    *platform,
 		    translate_key_code(key_code),
 		    translate_key_action(action)});
 	}
@@ -335,7 +334,6 @@ int32_t on_input_event(android_app *app, AInputEvent *input_event)
 		float y = AMotionEvent_getY(input_event, 0);
 
 		platform->input_event(MouseButtonInputEvent{
-		    *platform,
 		    translate_mouse_button(0),
 		    translate_mouse_action(action),
 		    x, y});
@@ -350,7 +348,6 @@ int32_t on_input_event(android_app *app, AInputEvent *input_event)
 		float y = AMotionEvent_getY(input_event, 0);
 
 		platform->input_event(TouchInputEvent{
-		    *platform,
 		    pointer_id,
 		    pointer_count,
 		    translate_touch_action(action),

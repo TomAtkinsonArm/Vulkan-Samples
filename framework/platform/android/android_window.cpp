@@ -21,7 +21,7 @@
 
 namespace vkb
 {
-AndroidWindow::AndroidWindow(AndroidPlatform *platform, ANativeWindow*& window, const Window::Properties &properties) :
+AndroidWindow::AndroidWindow(AndroidPlatform *platform, ANativeWindow *&window, const Window::Properties &properties) :
     Window(properties),
     handle{window}
 {
@@ -46,7 +46,7 @@ VkSurfaceKHR AndroidWindow::create_surface(Instance &instance)
 	return surface;
 }
 
-void process_events()
+void AndroidWindow::process_events()
 {
 	process_android_events(platform->get_android_app());
 }
