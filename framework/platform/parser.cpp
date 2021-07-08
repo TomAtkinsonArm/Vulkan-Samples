@@ -122,4 +122,5 @@ bool CommandParser::parse(CommandParserContext *context, const std::vector<Comma
 
 	return true;
 }
+
 }        // namespace vkb
