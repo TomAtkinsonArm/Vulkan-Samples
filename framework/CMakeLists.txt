@@ -273,8 +273,10 @@ set(PLATFORM_FILES
 set(PARSER_FILES
     # Header Files
     platform/parsers/CLI11.h
+    platform/parsers/help_formatter.h
     # Source Files
     platform/parsers/CLI11.cpp
+    platform/parsers/help_formatter.cpp
 )
 
 set(GRAPHING_FILES

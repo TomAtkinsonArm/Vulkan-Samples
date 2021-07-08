@@ -30,49 +30,15 @@ class Optional
 	virtual ~Optional() = default;
 	Optional()          = default;
 
-	Optional(const Optional &optional)
-	{
-		_has_value = optional._has_value;
-		_value     = optional._value;
-	}
+	Optional(const Optional &optional);
 
 	template <typename U = Type>
-	Optional(const U &value)
-	{
-		_has_value = true;
-		_value     = value;
-	}
+	Optional(const U &value);
 
-	bool has_value() const
-	{
-		return _has_value;
-	}
-
-	const Type &value() const
-	{
-		assert(_has_value && "Value does not exist");
-		return _value;
-	}
-
-	const Type value_or(Type &&alternative) const
-	{
-		if (has_value())
-		{
-			return _value;
-		}
-
-		return alternative;
-	}
-
-	const Type value_or(const Type &alternative = {}) const
-	{
-		if (has_value())
-		{
-			return _value;
-		}
-
-		return alternative;
-	}
+	bool        has_value() const;
+	const Type &value() const;
+	const Type  value_or(Type &&alternative) const;
+	const Type  value_or(const Type &alternative = {}) const;
 
 	Optional &operator=(Optional &&opt)
 	{
@@ -114,4 +80,54 @@ class Optional
 	bool _has_value = false;
 	Type _value;
 };
+
+template <typename Type>
+Optional<Type>::Optional(const Optional &optional)
+{
+	_has_value = optional._has_value;
+	_value     = optional._value;
+}
+
+template <typename Type>
+template <typename U>
+Optional<Type>::Optional(const U &value)
+{
+	_has_value = true;
+	_value     = value;
+}
+
+template <typename Type>
+bool Optional<Type>::has_value() const
+{
+	return _has_value;
+}
+
+template <typename Type>
+const Type &Optional<Type>::value() const
+{
+	assert(_has_value && "Value does not exist");
+	return _value;
+}
+
+template <typename Type>
+const Type Optional<Type>::value_or(Type &&alternative) const
+{
+	if (has_value())
+	{
+		return _value;
+	}
+
+	return alternative;
+}
+
+template <typename Type>
+const Type Optional<Type>::value_or(const Type &alternative) const
+{
+	if (has_value())
+	{
+		return _value;
+	}
+
+	return alternative;
+}
 }        // namespace vkb

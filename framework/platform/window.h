@@ -124,6 +124,8 @@ class Window
 
 	const Extent &get_extent() const;
 
+	Mode get_window_mode() const;
+
   protected:
 	Properties properties;
 };

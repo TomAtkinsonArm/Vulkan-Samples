@@ -21,6 +21,7 @@
 
 #include <CLI/CLI.hpp>
 
+#include "help_formatter.h"
 #include "platform/parser.h"
 #include "platform/plugins/plugin.h"
 

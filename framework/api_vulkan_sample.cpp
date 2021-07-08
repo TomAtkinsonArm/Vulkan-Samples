@@ -51,11 +51,7 @@ bool ApiVulkanSample::prepare(vkb::Platform &platform)
 	submit_info                   = vkb::initializers::submit_info();
 	submit_info.pWaitDstStageMask = &submit_pipeline_stages;
 
-	auto *options = platform.get_plugin<plugins::WindowOptions>();
-
-	// TODO: FIX THIS
-	// if (!(options->get_window_mode() == vkb::Window::Mode::Headless))
-	if (true)
+	if (platform.get_window().get_window_mode() != vkb::Window::Mode::Headless)
 	{
 		submit_info.waitSemaphoreCount   = 1;
 		submit_info.pWaitSemaphores      = &semaphores.acquired_image_ready;

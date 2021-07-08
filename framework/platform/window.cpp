@@ -50,4 +50,9 @@ float Window::get_content_scale_factor() const
 {
 	return 1.0f;
 }
+
+Window::Mode Window::get_window_mode() const
+{
+	return properties.mode;
+}
 }        // namespace vkb

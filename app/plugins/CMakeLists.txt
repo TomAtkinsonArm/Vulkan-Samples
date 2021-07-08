@@ -59,13 +59,9 @@ foreach(DIR IN LISTS PLUGINS_FILES)
     endif()
 endforeach()
 
-# filter plugins
+# filter compiled plugins
 if(NOT ${VKB_BUILD_TESTS})
     list(REMOVE_ITEM PLUGINS "start_test")
-endif()
-
-if(ANDROID)
-    list(REMOVE_ITEM PLUGINS "stop_on_close")
 endif()
 
 # Generate plugins.cpp

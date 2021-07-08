@@ -56,18 +56,48 @@ std::vector<Plugin *> associate_plugins(const std::vector<Plugin *> &plugins)
 	return plugins;
 }
 
-bool Plugin::activate_plugin(Platform *p, const CommandParser &parser)
+bool Plugin::activate_plugin(Platform *p, const CommandParser &parser, bool force_activation)
 {
 	platform = p;
 
 	bool active = is_active(parser);
 
 	// Plugin activated
-	if (active)
+	if (force_activation || active)
 	{
 		init(parser);
 	}
 
 	return active;
+}
+
+const std::string &Plugin::get_name() const
+{
+	return name;
+}
+
+const std::string &Plugin::get_description() const
+{
+	return description;
+}
+
+void Plugin::excludes(Plugin *plugin)
+{
+	exclusions.push_back(plugin);
+}
+
+const std::vector<Plugin *> &Plugin::get_exclusions() const
+{
+	return exclusions;
+}
+
+void Plugin::includes(Plugin *plugin)
+{
+	inclusions.push_back(plugin);
+}
+
+const std::vector<Plugin *> &Plugin::get_inclusions() const
+{
+	return inclusions;
 }
 }        // namespace vkb

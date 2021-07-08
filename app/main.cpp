@@ -69,10 +69,5 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-#ifdef VK_USE_PLATFORM_ANDROID_KHR
-	// TODO: Fix this
-	platform.main_loop();        // Continue to process events until onDestroy()
-#else
 	return EXIT_SUCCESS;
-#endif
 }

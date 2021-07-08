@@ -42,8 +42,10 @@ CLI11CommandContextState CLI11CommandContext::get_state() const
 }
 
 CLI11CommandParser::CLI11CommandParser(const std::string &name, const std::string &description, const std::vector<std::string> &args) :
-    _cli11{std::make_unique<CLI::App>(name, description)}
+    _cli11{std::make_unique<CLI::App>(description, name)}
 {
+	_cli11->formatter(std::make_shared<HelpFormatter>());
+
 	_args.resize(args.size());
 	std::transform(args.begin(), args.end(), _args.begin(), [](const std::string &string) -> char * { return const_cast<char *>(string.c_str()); });
 }
@@ -157,6 +159,9 @@ bool CLI11CommandParser::parse(const std::vector<Plugin *> &plugins)
 	for (auto plugin : plugins)
 	{
 		auto group = std::make_unique<CLI::App>();
+
+		group->name(plugin->get_name());
+		group->description(plugin->get_description());
 
 		CLI11CommandContext context(group.get());
 		CommandParser::parse(&context, plugin->get_cli_commands());

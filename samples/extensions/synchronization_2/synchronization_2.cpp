@@ -267,11 +267,7 @@ void Synchronization2::prepare_storage_buffers()
 	// Initial particle positions
 	std::vector<Particle> particle_buffer(num_particles);
 
-	auto window_options = platform->get_plugin<::plugins::WindowOptions>();
-	
-	// TODO: FIX THIS
-	// std::default_random_engine      rnd_engine(window_options->get_window_mode() == vkb::Window::Mode::Headless ? 0 : (unsigned) time(nullptr));
-	std::default_random_engine      rnd_engine((unsigned) time(nullptr));
+	std::default_random_engine      rnd_engine(platform->get_window().get_window_mode() == vkb::Window::Mode::Headless ? 0 : (unsigned) time(nullptr));
 	std::normal_distribution<float> rnd_distribution(0.0f, 1.0f);
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(attractors.size()); i++)

@@ -83,25 +83,16 @@ class Plugin
 	    name{name}, description{description} {};
 	virtual ~Plugin() = default;
 
-	const std::string &get_name() const
-	{
-		return name;
-	}
-
-	const std::string &get_description() const
-	{
-		return description;
-	}
-
 	/**
 	 * @brief Conducts the process of activating and initializing an plugin
 	 * 
 	 * @param platform The platform
 	 * @param parseer The parser used to check if the plugins flags are present
+	 * @param force_activation Force a plugin to be activated, not advised unless the plugin works without inputs
 	 * @return true If the plugin is to be activated
 	 * @return false If the plugin is not active
 	 */
-	bool activate_plugin(Platform *platform, const CommandParser &parser);
+	bool activate_plugin(Platform *platform, const CommandParser &parser, bool force_activation = false);
 
 	virtual const std::vector<Command *> &get_cli_commands() const = 0;
 
@@ -150,25 +141,12 @@ class Plugin
 	 */
 	virtual void on_post_draw(RenderContext &context) = 0;
 
-	void excludes(Plugin *plugin)
-	{
-		exclusions.push_back(plugin);
-	}
-
-	const std::vector<Plugin *> &get_exclusions() const
-	{
-		return exclusions;
-	}
-
-	void includes(Plugin *plugin)
-	{
-		inclusions.push_back(plugin);
-	}
-
-	const std::vector<Plugin *> &get_inclusions() const
-	{
-		return inclusions;
-	}
+	const std::string &          get_name() const;
+	const std::string &          get_description() const;
+	void                         excludes(Plugin *plugin);
+	const std::vector<Plugin *> &get_exclusions() const;
+	void                         includes(Plugin *plugin);
+	const std::vector<Plugin *> &get_inclusions() const;
 
 	/**
 	 * @brief Test whether the plugin contains a given tag

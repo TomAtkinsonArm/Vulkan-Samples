@@ -60,7 +60,7 @@ bool Platform::initialize(const std::vector<Plugin *> &plugins = {})
 
 	LOGI("Logger initialized");
 
-	parser = std::make_unique<CLI11CommandParser>("vulkan_samples", "Description", arguments);
+	parser = std::make_unique<CLI11CommandParser>("vulkan_samples", "\n\tVulkan Samples\n\n\t\tA collection of samples to demonstrate the Vulkan best practice.\n", arguments);
 
 	// Process command line arguments
 	if (!parser->parse(associate_plugins(plugins)))

@@ -105,11 +105,6 @@ class MultipleCommands
 
 	const std::vector<Command *> &get_commands() const;
 
-	void append_commands(const std::vector<Command *> &commands)
-	{
-		_commands.insert(_commands.end(), commands.begin(), commands.end());
-	}
-
   private:
 	std::vector<Command *> _commands;
 };
